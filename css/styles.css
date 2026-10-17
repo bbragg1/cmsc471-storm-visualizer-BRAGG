@@ -1,0 +1,347 @@
+/* Reset default styles */
+* {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* Dark page colors */
+body {
+    margin: 0;
+    background: #14171c;
+    color: #e3e6ea;
+}
+
+/* Container styling for layout */
+.container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 16px;
+}
+
+h1 {
+    margin-bottom: 0.25rem;
+}
+
+.intro {
+    color: #b8bfc8;
+}
+
+#loading {
+    color: #9aa3ad;
+    font-style: italic;
+}
+
+/* ---------- Map ---------- */
+#map {
+    position: relative;      /* lets the reset button sit in the map's corner */
+}
+
+#resetZoom {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+#map svg {
+    display: block;
+    width: 100%;     /* the SVG uses a viewBox, so it shrinks to fit narrow screens */
+    height: auto;
+    background: #0f1216;
+    border: 1px solid #2c323a;
+    border-radius: 6px;
+}
+
+.state {
+    fill: #2b3038;
+    stroke: #5b6470;
+    stroke-width: 0.5px;
+    vector-effect: non-scaling-stroke;   /* border stays thin when zoomed in */
+}
+
+.inset-box {
+    fill: #0f1216;
+    stroke: #5b6470;
+    stroke-width: 1px;
+}
+
+/* Inset glows yellow when the picked storm hit Puerto Rico / the Virgin Islands */
+.inset-box.highlight {
+    stroke: #ffd166;
+    stroke-width: 2px;
+}
+
+.inset-title {
+    fill: #9aa3ad;
+    font-size: 11px;
+}
+
+/* Station dots. The thin dark outline keeps overlapping dots apart. */
+.station {
+    stroke: #0f1216;
+    stroke-width: 0.6px;
+    vector-effect: non-scaling-stroke;   /* outline stays thin when zoomed in */
+    cursor: pointer;
+}
+
+/* No reading that day: hollow ring instead of a filled dot */
+.station.no-reading {
+    fill: none;
+    stroke: #8a939e;
+    stroke-width: 0.8px;
+    stroke-opacity: 0.55;
+}
+
+/* Very heavy rain (dark reds): light ring so the dot doesn't vanish into the dark map */
+.station.extreme,
+#legend rect.extreme {
+    stroke: #ffc4c4;
+    stroke-width: 0.9px;
+}
+
+/* Hovered station: bright white outline (listed last so it wins over the rules above) */
+.station.hovered {
+    stroke: #ffffff;
+    stroke-width: 2px;
+    stroke-opacity: 1;
+}
+
+/* ---------- Controls ---------- */
+#controls {
+    background: #1b1f26;
+    border: 1px solid #2c323a;
+    border-radius: 6px;
+    padding: 10px 14px 0 14px;
+    margin: 1rem 0;
+}
+
+.control-row {
+    display: flex;
+    flex-wrap: wrap;        /* controls wrap onto a new line on narrow screens */
+    align-items: center;
+    gap: 10px 18px;
+    margin-bottom: 6px;
+}
+
+select,
+button {
+    background: #262b33;
+    color: #e3e6ea;
+    border: 1px solid #47505c;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+button:hover,
+select:hover {
+    border-color: #8a939e;
+}
+
+/* Two buttons joined together, the active one is filled in */
+.toggle {
+    display: flex;
+}
+
+.toggle button {
+    border-radius: 0;
+    margin: 0;
+}
+
+.toggle button:first-child {
+    border-radius: 4px 0 0 4px;
+}
+
+.toggle button:last-child {
+    border-radius: 0 4px 4px 0;
+    border-left: none;
+}
+
+.toggle button.active {
+    background: #4a6fa5;
+    border-color: #4a6fa5;
+    color: #ffffff;
+}
+
+#dateLabel {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#rangeLabel {
+    color: #9aa3ad;
+    font-size: 13px;
+}
+
+/* d3-simple-slider draws with black by default; recolor it for the dark page */
+#slider svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    color: #b8bfc8;          /* tick labels use currentColor */
+}
+
+#slider .track {
+    stroke: #3a414b;
+}
+
+#slider .track-inset {
+    stroke: #262b33;
+}
+
+#slider .track-fill {
+    stroke: #4a6fa5;
+}
+
+#slider .handle {
+    fill: #e3e6ea;
+    stroke: #14171c;
+}
+
+#slider .tick line {
+    stroke: #5b6470;
+}
+
+/* ---------- Storm card ---------- */
+#stormCard {
+    display: none;           /* only shown when a storm is picked */
+    background: #1b1f26;
+    border-left: 4px solid #f0443a;
+    border-radius: 4px;
+    padding: 6px 14px;
+    margin: 1rem 0;
+}
+
+#stormCard h3 {
+    margin: 4px 0 0 0;
+}
+
+#stormCard p {
+    margin: 4px 0;
+}
+
+.storm-dates {
+    color: #9aa3ad;
+    font-size: 14px;
+}
+
+/* ---------- Bar chart ---------- */
+#barChart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 1.5rem;
+}
+
+.bar.outside {
+    opacity: 0.25;           /* days outside the slider range fade out */
+}
+
+.x-axis text,
+.y-axis text {
+    fill: #b8bfc8;
+    font-size: 11px;
+}
+
+.x-axis path,
+.x-axis line {
+    stroke: #5b6470;
+}
+
+.y-axis .grid-line {
+    stroke: #2c323a;
+    stroke-dasharray: 2,2;
+}
+
+.axis-label {
+    fill: #b8bfc8;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* The brush box (d3 calls it .selection) */
+.brush .selection {
+    fill: #4a6fa5;
+    fill-opacity: 0.18;
+    stroke: #7fb3e0;
+    stroke-width: 1px;
+}
+
+.day-marker {
+    stroke: #ffffff;
+    stroke-width: 1.5px;
+    pointer-events: none;
+}
+
+.caption {
+    color: #9aa3ad;
+    font-size: 14px;
+    margin-top: 0.4rem;
+}
+
+/* ---------- Write-up ---------- */
+.writeup {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #2c323a;
+}
+
+.writeup h3 {
+    margin-top: 1.8rem;
+    margin-bottom: 0.4rem;
+}
+
+.writeup p,
+.writeup li {
+    color: #c9ced5;
+}
+
+.writeup a {
+    color: #7fb3e0;
+}
+
+.writeup code {
+    background: #262b33;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+/* ---------- Tooltip ---------- */
+#tooltip {
+    position: absolute;      /* So we can move it with the cursor */
+    padding: 10px;
+    background: #1b1f26;
+    color: #e3e6ea;
+    border: 1px solid #47505c;
+    border-radius: 4px;
+    pointer-events: none;    /* Prevent tooltip from interfering with mouse events */
+    font-size: 12px;
+    line-height: 1.5;
+    max-width: 300px;
+}
+
+.tip-hint {
+    color: #9aa3ad;
+    font-style: italic;
+}
+
+/* ---------- Legend ---------- */
+#legend svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 0.5rem;
+}
+
+.legend-title {
+    fill: #e3e6ea;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.legend-label {
+    fill: #b8bfc8;
+    font-size: 11px;
+}

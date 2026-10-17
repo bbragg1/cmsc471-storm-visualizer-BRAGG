@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2017 Storm and Precipitation Tracker</title>
+    <link rel="icon" href="data:,"> <!-- empty icon, stops a favicon.ico 404 -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <div class="container"> <!-- Centers content and sets max width -->
+        <h1>2017 Storm and Precipitation Tracker - Brady Bragg</h1>
+        <p class="intro">
+            In 2017, a string of big storms hit the United States. Harvey dropped almost four feet
+            of rain on parts of Texas. Irma swept across Florida. Maria hit Puerto Rico just as this
+            data ends. This map shows daily rain and snow at about 1,500 weather stations
+            from January 1 to September 21, 2017, so you can see where each storm hit hardest.
+        </p>
+        <p class="intro">
+            <strong>Try this:</strong> pick Hurricane Harvey from the Storm menu, switch to
+            Running total, and drag the slider. Hover over any station for its details.
+        </p>
+
+        <p id="loading">Loading weather data...</p>
+
+        <div id="controls">
+            <div class="control-row">
+                <label>Storm: <select id="stormSelect"></select></label>
+
+                <!-- Each toggle is two buttons; the active one is highlighted -->
+                <div class="toggle" id="measureToggle">
+                    <button data-value="rain" class="active">Rain</button>
+                    <button data-value="snow">Snow</button>
+                </div>
+                <div class="toggle" id="modeToggle">
+                    <button data-value="daily" class="active">Daily</button>
+                    <button data-value="total">Running total</button>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <span id="dateLabel"></span>
+                <span id="rangeLabel"></span>
+            </div>
+            <div id="slider"></div>
+        </div>
+
+        <div id="stormCard"></div> <!-- Shows details when a storm is picked -->
+
+        <div id="legend"></div> <!-- Color legend (SVG) -->
+        <div id="map"> <!-- The map (SVG) -->
+            <button id="resetZoom">Reset zoom</button>
+        </div>
+        <p class="caption">
+            Map: each dot is a weather station, colored by the amount for the selected day
+            (or the running total). A filled gray dot means a reading of zero.
+            A hollow ring means the station sent no reading that day.
+            Scroll to zoom, drag to pan, and hover a station for details.
+        </p>
+
+        <div id="barChart"></div> <!-- Daily bar chart (SVG) -->
+        <p class="caption">
+            Bar chart: each bar is one day of 2017. Its height and color show the most rain
+            (or snow) any single station got that day, so big storms stand out as tall spikes.
+            The white line is the selected day. Drag across the bars to pick a date range,
+            or click a bar to jump to that day.
+        </p>
+
+        <!-- ================= Write-up ================= -->
+        <div class="writeup">
+            <h2>Write-up</h2>
+
+            <h3>The data</h3>
+            <p>
+                I used the Daily Weather in the U.S., 2017 dataset from the course, which comes from NOAA's
+                GHCN-Daily records. Each row is one weather station on one day, from January 1 to
+                September 21, 2017. I focused on precipitation since that's where the big storms show up.
+                The main columns are PRCP (daily rain in inches) and SNOW (daily snowfall in inches).
+                The tooltip also shows SNWD (snow on the ground) and WSF5 (fastest wind gust in mph).
+            </p>
+            <p>
+                The raw file is 37 MB, which is too slow for a web page, so a short Python script
+                (<code>prep_data.py</code>) cuts it down to about 9 MB. It keeps only the 50 states, Puerto Rico
+                and the Virgin Islands, removes impossible values, and splits the data into a station list
+                and a readings list. One bad value it removes is Teterboro, NJ reporting 68 inches of snow
+                on March 13, when stations nearby got about 7.
+            </p>
+            <p>
+                Two gaps in the data matter. First, a blank means the station didn't report, which isn't the
+                same as zero, so the map shows those stations as hollow rings. Second, after September 17 only
+                about 650 of the usual 1,550 stations report. So when the Puerto Rico and Virgin Islands
+                stations go silent on September 19, the day Maria hit, I can't say for sure it was the storm.
+                Irma is clearer, since the St. Thomas station went quiet from September 6 to 10 while
+                everything else kept working.
+            </p>
+
+            <h3>Design decisions</h3>
+            <p>
+                I drew each station as its own dot instead of shading whole states. Storm rain is very local.
+                Harvey dropped 47 inches on Port Arthur while El Paso got none, and a state average would hide
+                that. I thought about a hexagon grid too, but dots let you hover over a real place.
+            </p>
+            <p>
+                Rain uses a threshold color scale that goes from green for drizzle, through blue and purple,
+                to red for downpours. The breaks are close together at the low end and spread out at the top
+                (0.01 up to 60 inches), since about half of rainy days get 0.2 inches or less but the wettest
+                day got 26. A linear scale would have made almost every dot look the same. The same breaks work
+                for daily amounts and running totals, so a color always means the same amount. Snow gets its
+                own scale from steel blue to white, and anything 18 inches or more gets a soft glow.
+            </p>
+            <p>
+                I went with a dark theme because the bright colors stand out more on it. Zero rain is a dim
+                gray that fades into the map, and the darkest reds get a thin light ring so they don't disappear.
+            </p>
+            <p>
+                For the bar chart I first tried the daily average across all stations, but the storms barely
+                showed up. On Harvey's worst day the average was only 0.15 inches. The daily maximum shows each
+                storm as a clear spike, even though one station can make a whole day look stormy.
+            </p>
+            <p>
+                Puerto Rico and the Virgin Islands aren't part of the standard US map projection, so I added a
+                small inset box with its own projection. Irma and Maria both hit there, so leaving them out
+                wasn't an option. I also considered giving each storm its own small map, but one map with a
+                storm menu kept things readable and still lets you explore the rest of the year.
+            </p>
+
+            <h3>Interactions</h3>
+            <p>Filtering and linking (Category I):</p>
+            <ul>
+                <li><strong>Date slider:</strong> picks the day shown on the map.</li>
+                <li><strong>Storm menu:</strong> sets the slider to the storm's dates plus 3 days on each side,
+                    switches to rain or snow, zooms the map, and shows a card with details.</li>
+                <li><strong>Rain / Snow and Daily / Running total toggles:</strong> change what the dots show.</li>
+                <li><strong>Brushing and linking:</strong> dragging across the bar chart sets the slider range,
+                    and the map updates with it. Clicking a bar jumps to that day.</li>
+            </ul>
+            <p>Exploration and elaboration (Category II):</p>
+            <ul>
+                <li><strong>Tooltips:</strong> hovering a station shows its name, elevation, that day's amount,
+                    running total, and wind gust.</li>
+                <li><strong>Zoom and pan:</strong> scroll and drag on the map, or pick a storm to zoom to it.
+                    A Reset zoom button goes back to the full view.</li>
+                <li><strong>Highlighting:</strong> the hovered station gets a white outline, days outside the
+                    range fade on the bar chart, and the inset turns yellow for Irma and Maria.</li>
+                <li><strong>Storm cards:</strong> each storm shows its dates, where it hit, and its peak station.</li>
+            </ul>
+
+            <h3>Data sources and references</h3>
+            <ul>
+                <li>Weather data: Daily Weather in the U.S., 2017, provided by CMSC471. Original source is NOAA's
+                    <a href="https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily">GHCN-Daily</a>.</li>
+                <li>State shapes: <a href="https://github.com/topojson/us-atlas">us-atlas</a> (states-10m.json, v3.0.1)
+                    by Mike Bostock.</li>
+                <li>Libraries: <a href="https://d3js.org">D3.js v7</a>,
+                    <a href="https://github.com/topojson/topojson-client">topojson-client</a>, and
+                    <a href="https://github.com/johnwalley/d3-simple-slider">d3-simple-slider</a> by John Walley.</li>
+                <li>Storm background: NOAA National Hurricane Center
+                    <a href="https://www.nhc.noaa.gov/data/tcr/index.php?season=2017&amp;basin=atl">2017 storm reports</a>.
+                    The peak amounts on this page come from the dataset itself.</li>
+            </ul>
+
+            <h3>Development process</h3>
+            <p>
+                I did this project on my own, so I handled everything from the data cleaning to the write-up.
+                I wasn't really keeping track of time, but it was probably around 10 to 12 hours. I started when
+                fall break began on October 10 and worked a couple hours a day, with about 5 hours on the last day.
+            </p>
+            <p>
+                Cleaning the data took the most time. The file looked tidy at first, but it had stations from
+                Canada and Guam mixed in, values that couldn't be real, and two different stations both named
+                JACKSON. I found the bad values by sorting each column and comparing the top ones to nearby
+                stations. I also checked each storm's dates against the rain peaks in the data. They all matched,
+                though Emily was hard to confirm since regular Florida summer storms blur it. While checking Maria,
+                I found the drop in reports after September 17, which changed how I describe that storm.
+            </p>
+            <p>
+                On the visualization side, keeping the storm menu, slider, and brush in sync was the trickiest
+                part, since moving the brush from code fires the same event as a real drag. Zooming also took
+                work, as the dots grew when zoomed in and the map projection can't place points out in the ocean.
+                Getting the colors readable on a dark background took a few tries too.
+            </p>
+            <p>
+                Overall, the biggest lesson was to check the data before trusting the story. I expected Maria
+                to be the big finish, but the data runs out right as it arrives. My favorite part is turning on
+                the running total for Harvey and dragging the slider to watch Houston turn red.
+            </p>
+
+            <h3>AI usage</h3>
+            <p>
+                I used Claude throughout this project. I described the colors I wanted and it gave
+                me the exact values to use. It helped me find the major storms of 2017 and their dates, and checked
+                those dates against the data. It also found and helped me set up the US map (the us-atlas file,
+                topojson-client, and the projections for the main map and the inset), and showed me how to place
+                each station on the map using those projections.
+            </p>
+            <p>
+                I struggled to figure out brushing on my own, so Claude showed me how to implement it on the bar
+                chart. It also set the zoom box for each storm and helped fix a crash when zooming to Irma. Other
+                times I used it as a faster way to search documentation, like asking "how do I make the dots glow
+                in D3?" The main AI assisted sections are marked with comments in the code.
+            </p>
+        </div>
+    </div>
+
+    <div id="tooltip" style="display:none"></div> <!-- One shared tooltip, moved around with the mouse -->
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- topojson-client turns the compact map file (TopoJSON) into shapes D3 can draw (GeoJSON) -->
+    <script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+    <script src="https://unpkg.com/d3-simple-slider@2.1.0/dist/d3-simple-slider.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
